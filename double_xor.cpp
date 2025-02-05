@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
         if(a[i] != output[i]) std::cout  << "Mismatch " << "i : " << i << " : " << a[i] << " = " << output[i] << "\n"; 
     }
 
-    std::cout << "Average bits per double: " << (double)(output.size() * sizeof(double) * 8 ) / compressed_length_bits << "\n";
-
+    std::cout << "Compression factor: " << (double)(output.size() * sizeof(double) * 8 ) / compressed_length_bits << "\n";
+    std::cout << "Bits per double: " << (double)compressed_length_bits / (double)nInput << "\n";
     return 0; 
 }
