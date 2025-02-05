@@ -5,7 +5,7 @@
 
 int main(int argc, char *argv[])
 {
-    const int nInput = 24; 
+    const int nInput = 30; 
     double a[nInput] = { 0.0, 0.1, 0.80566,  0.80566,  0.80567,  0.8061,  12, 24, 15, 15.5, 14.0, 14.0, 16.0, 16.5, 18, 18, 18, 18, 20, 18, 14.0, 16.0, 16.0, 16.5, 18, 18, 18, 18, 20, 18,  }; 
 
     std::vector<bool> bitvector = gorilla::compress(a, nInput); // updated call
