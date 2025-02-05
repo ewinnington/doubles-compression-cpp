@@ -15,6 +15,12 @@ namespace gorilla {
 #define BITS_LEADING_LENGTH 6 //Contrary to the paper claims, I need 6 bits to encode the leading zeros and not 5 bits
 #define BITS_XOR_LENGTH 6
 
+std::string padUint64(uint64_t value) {
+    std::stringstream ss;
+    ss << "0x" << std::setw(16) << std::setfill('0') << std::hex << value;
+    return ss.str();
+}
+
 static inline void push_back_value(std::vector<bool>& vect, int bit_length, int value) {
     std::bitset<16> bs16(value);
     for(int i = bit_length-1; i >= 0; i--) {
@@ -45,8 +51,11 @@ std::vector<bool> compress(const double* input, int length) {
         uint64_t val_dbl_prev = *((uint64_t*)&input[i-1]);
         uint64_t result = (val_dbl_curr ^ val_dbl_prev);
 
+    
         int leading_zeros = __builtin_clzll(result);  // thank clang++ for these functions
         int trailing_zeros = __builtin_ctzll(result);
+
+        //std::cout << "i : " << i << " val_dbl_curr : " << padUint64(val_dbl_curr) << " val_dbl_prev : " << padUint64(val_dbl_prev) << " result : " << padUint64(result) << " NZ lead:trail " << leading_zeros << " : " << trailing_zeros << "\n";
 
         if (result == 0) {
             vect.push_back(false);  // 0: identical value
@@ -56,17 +65,20 @@ std::vector<bool> compress(const double* input, int length) {
             // there are at least as many leading zeros and as many trailing zeros as with the previous value
             if ((leading_zeros >= prev_leading_zeros) & (trailing_zeros == prev_trailing_zeros)) {
                 vect.push_back(false);  // 0: Store following meaningful XOR value
-                push_back_meaningful_xor(vect, leading_zeros, trailing_zeros, result); // use bitset to store meaningful XOR
+                push_back_meaningful_xor(vect, prev_leading_zeros, prev_trailing_zeros, result); // use bitset to store meaningful XOR
             } else {
                 vect.push_back(true);  // 1: Store following meaningful XOR value
                 push_back_value(vect, BITS_LEADING_LENGTH, leading_zeros); // 6 bits length of leading
                 push_back_value(vect, BITS_XOR_LENGTH, 64-(leading_zeros + trailing_zeros)); // 6 bits length of meaningful XOR
                 push_back_meaningful_xor(vect, leading_zeros, trailing_zeros, result); // meaningful XOR
+
+                prev_leading_zeros = leading_zeros;
+                prev_trailing_zeros = trailing_zeros;
+
+                //std::cout << "3b" << " leading_zeros " << leading_zeros << " trailing_zeros " << trailing_zeros << " result " << padUint64(result) << "\n";
             }
         }
         result_prev = result;
-        prev_leading_zeros = leading_zeros;
-        prev_trailing_zeros = trailing_zeros;
     }
 
     return vect;
@@ -140,7 +152,7 @@ std::vector<double> decompress(const std::vector<bool>& bitvector) {
                 last_value = result;
                 o.push_back(*(double*)&result);
 
-                // std::cout << "lb " << lb << " xb " << xb << " value " << value << " llb " << last_leading_bits << " lxbl " << last_xor_bits_length << " result " << result << "\n";
+                //std::cout << "lb " << lb << " xb " << xb << " value " << value << " llb " << last_leading_bits << " lxbl " << last_xor_bits_length << " result " << result << "\n";
             }
         }
 
