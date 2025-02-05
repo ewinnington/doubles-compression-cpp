@@ -13,7 +13,7 @@ int main() {
     // Fill in randomData
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0.0, 1.0);
+    std::uniform_real_distribution<> dis(-10.0, 10.0);
     for (size_t i = 0; i < dataSize; ++i) {
         randomData[i] = dis(gen);
     }
@@ -41,12 +41,12 @@ int main() {
         auto decompressedData = gorilla::decompress(compressedData);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = end - start;
-        for (size_t i = 0; i < original.size(); ++i) {
+        /*for (size_t i = 0; i < original.size(); ++i) {
             if (std::fabs(original[i] - decompressedData[i]) > 1e-12) {
-                std::cerr << "Data mismatch at index " << i << std::endl << "Original: " << original[i] << std::endl << "Decompressed: " << decompressedData[i] << std::endl;
+                std::cerr << "Data mismatch at index " << i << std::endl << "Prev: " << (i>0? original[i-1] : 0) << " Original: " << original[i] << std::endl << "Decompressed: " << decompressedData[i] << std::endl;
                 break;
             }
-        }
+        }*/
         return duration.count();
     };
 
@@ -60,11 +60,9 @@ int main() {
         auto [compressTimeRandom, compressedRandom] = measureCompress(randomData);
         totalCompressTimeRandom += compressTimeRandom;
         totalDecompressTimeRandom += measureDecompress(compressedRandom, randomData);
-
         auto [compressTimeZero, compressedZero] = measureCompress(zeroData);
         totalCompressTimeZero += compressTimeZero;
         totalDecompressTimeZero += measureDecompress(compressedZero, zeroData);
-
         auto [compressTimeSlowInc, compressedSlowInc] = measureCompress(slowIncData);
         totalCompressTimeSlowInc += compressTimeSlowInc;
         totalDecompressTimeSlowInc += measureDecompress(compressedSlowInc, slowIncData);

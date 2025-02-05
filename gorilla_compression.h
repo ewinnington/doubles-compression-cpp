@@ -3,6 +3,8 @@
 #include <vector>
 #include <bitset>
 #include <cstdint>
+#include <iomanip>
+#include <sstream>
 
 //Implementing the Xor Compression for double data as described in the Facebook Gorilla paper
 //https://www.vldb.org/pvldb/vol8/p1816-teller.pdf
