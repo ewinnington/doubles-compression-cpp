@@ -1,9 +1,9 @@
-
 #include <iostream>
 #include <vector>
 #include <random>
 #include <chrono>
-#include "../gorilla_compression.h" // Assuming this is the header for gorilla compression
+#include <cmath>
+#include "../gorilla_compression.h"
 
 int main() {
     // Generate datasets
@@ -36,11 +36,17 @@ int main() {
     };
 
     // Function to measure decompression time
-    auto measureDecompress = [&](const std::vector<bool>& compressedData) {
+    auto measureDecompress = [&](const std::vector<bool>& compressedData, const std::vector<double>& original) {
         auto start = std::chrono::high_resolution_clock::now();
         auto decompressedData = gorilla::decompress(compressedData);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> duration = end - start;
+        for (size_t i = 0; i < original.size(); ++i) {
+            if (std::fabs(original[i] - decompressedData[i]) > 1e-12) {
+                std::cerr << "Data mismatch at index " << i << std::endl << "Original: " << original[i] << std::endl << "Decompressed: " << decompressedData[i] << std::endl;
+                break;
+            }
+        }
         return duration.count();
     };
 
@@ -53,15 +59,15 @@ int main() {
     for (int i = 0; i < repetitions; ++i) {
         auto [compressTimeRandom, compressedRandom] = measureCompress(randomData);
         totalCompressTimeRandom += compressTimeRandom;
-        totalDecompressTimeRandom += measureDecompress(compressedRandom);
+        totalDecompressTimeRandom += measureDecompress(compressedRandom, randomData);
 
         auto [compressTimeZero, compressedZero] = measureCompress(zeroData);
         totalCompressTimeZero += compressTimeZero;
-        totalDecompressTimeZero += measureDecompress(compressedZero);
+        totalDecompressTimeZero += measureDecompress(compressedZero, zeroData);
 
         auto [compressTimeSlowInc, compressedSlowInc] = measureCompress(slowIncData);
         totalCompressTimeSlowInc += compressTimeSlowInc;
-        totalDecompressTimeSlowInc += measureDecompress(compressedSlowInc);
+        totalDecompressTimeSlowInc += measureDecompress(compressedSlowInc, slowIncData);
     }
 
     // Print performance metrics
