@@ -15,7 +15,7 @@
 namespace gorilla {
 
 #define BITS_LEADING_LENGTH 6 //Contrary to the paper claims, I need 6 bits to encode the leading zeros and not 5 bits
-#define BITS_XOR_LENGTH 6
+#define BITS_XOR_LENGTH 7
 
 std::string padUint64(uint64_t value) {
     std::stringstream ss;
@@ -65,7 +65,7 @@ std::vector<bool> compress(const double* input, int length) {
             vect.push_back(true); // 1: control bit
             // If the block of meaningful bits falls within the block of previous meaningful bits
             // there are at least as many leading zeros and as many trailing zeros as with the previous value
-            if ((leading_zeros >= prev_leading_zeros) & (trailing_zeros == prev_trailing_zeros)) {
+            if ((leading_zeros >= prev_leading_zeros) && (trailing_zeros >= prev_trailing_zeros)) {
                 vect.push_back(false);  // 0: Store following meaningful XOR value
                 push_back_meaningful_xor(vect, prev_leading_zeros, prev_trailing_zeros, result); // use bitset to store meaningful XOR
             } else {
